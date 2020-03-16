@@ -1,11 +1,7 @@
 package transactions;
 
-import transactions.Trader;
-import transactions.Transaction;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Dieter Holz
@@ -22,11 +18,17 @@ public class TransactionList {
     }
 
     public List<Transaction> transactionsInYear(int year) {
-        return null;
+        return allTransactions.stream()
+                .filter(t -> t.getYear() == year)
+                .sorted(Comparator.comparing(Transaction::getValue))
+                .collect(Collectors.toList());
     }
 
     public List<String> cities() {
-        return null;
+        return allTransactions.stream()
+                .map(t -> t.getTrader().getCity())
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     /**
@@ -34,7 +36,12 @@ public class TransactionList {
      * @return all traders from given city sorted by name.
      */
     public List<Trader> traders(String city) {
-        return null;
+        return allTransactions.stream()
+                .map(Transaction::getTrader)
+                .filter(trader -> trader.getCity().equals(city))
+                .distinct()
+                .sorted(Comparator.comparing(Trader::getName))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -43,7 +50,9 @@ public class TransactionList {
      * @return a Map with the year as key and a list of all transaction of this year as value
      */
     public Map<Integer, List<Transaction>> transactionsByYear() {
-        return null;
+        return allTransactions.stream()
+                .collect(Collectors.groupingBy(Transaction::getYear))
+                ;
     }
 
     /**
@@ -51,7 +60,8 @@ public class TransactionList {
      * @return true if there are any trader based in given city
      */
     public boolean traderInCity(String city) {
-        return false;
+        return allTransactions.stream()
+                .anyMatch(t -> t.getTrader().getCity().equals(city));
     }
 
     /**
@@ -59,34 +69,47 @@ public class TransactionList {
      * @param to   the trader's new location
      */
     public void relocateTraders(String from, String to) {
+        allTransactions.stream()
+                .filter(t -> t.getTrader().getCity().equals(from))
+                .forEach(t -> t.getTrader().setCity(to));
     }
 
     /**
      * @return the highest value in all the transactions
      */
     public int highestValue() {
-        return 0;
+        return allTransactions.stream()
+                .mapToInt(Transaction::getValue)
+                .max().orElseThrow(NoSuchElementException::new);
     }
 
     /**
      * @return the sum of all transaction values
      */
     public int totalValue() {
-        return 0;
+        return allTransactions.stream()
+                .mapToInt(Transaction::getValue)
+                .sum();
     }
 
     /**
-     * @return the transactions.Transaction with the lowest value
+     * @return the Transaction with the lowest value
      */
-    public Transaction getLowestValueTransaction(){
-        return null;
+    public Transaction getLowestValueTransaction() {
+        return allTransactions.stream()
+                .min(Comparator.comparing(Transaction::getValue))
+                .orElseThrow(NoSuchElementException::new);
     }
 
     /**
      * @return a string of all traders’ names sorted alphabetically
      */
     public String traderNames() {
-        return null;
+        return allTransactions.stream()
+                .map(t -> t.getTrader().getName())
+                .sorted()
+                .distinct()
+                .collect(Collectors.joining());
     }
 
 }
